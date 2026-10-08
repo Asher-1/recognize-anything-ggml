@@ -283,9 +283,10 @@ def load_tag2text(
 
 @torch.no_grad()
 def forward_ram_plus(model: Module, imgs: Tensor) -> Tensor:
-    image_embeds = model.image_proj(model.visual_encoder(imgs.to(device)))
+    target_device = imgs.device
+    image_embeds = model.image_proj(model.visual_encoder(imgs.to(target_device)))
     image_atts = torch.ones(
-        image_embeds.size()[:-1], dtype=torch.long).to(device)
+        image_embeds.size()[:-1], dtype=torch.long).to(target_device)
 
     image_cls_embeds = image_embeds[:, 0, :]
     image_spatial_embeds = image_embeds[:, 1:, :]
@@ -300,9 +301,8 @@ def forward_ram_plus(model: Module, imgs: Tensor) -> Tensor:
     logits_per_image = logits_per_image.view(bs, -1,des_per_class)
 
     weight_normalized = F.softmax(logits_per_image, dim=2)
-    label_embed_reweight = torch.empty(bs, model.num_class, 512).cuda()
     weight_normalized = F.softmax(logits_per_image, dim=2)
-    label_embed_reweight = torch.empty(bs, model.num_class, 512).cuda()
+    label_embed_reweight = torch.empty(bs, model.num_class, 512, device=target_device)
     for i in range(bs):
         reshaped_value = model.label_embed.view(-1, des_per_class, 512)
         product = weight_normalized[i].unsqueeze(-1) * reshaped_value
@@ -321,9 +321,10 @@ def forward_ram_plus(model: Module, imgs: Tensor) -> Tensor:
 
 @torch.no_grad()
 def forward_ram(model: Module, imgs: Tensor) -> Tensor:
-    image_embeds = model.image_proj(model.visual_encoder(imgs.to(device)))
+    target_device = imgs.device
+    image_embeds = model.image_proj(model.visual_encoder(imgs.to(target_device)))
     image_atts = torch.ones(
-        image_embeds.size()[:-1], dtype=torch.long).to(device)
+        image_embeds.size()[:-1], dtype=torch.long).to(target_device)
     label_embed = relu(model.wordvec_proj(model.label_embed)).unsqueeze(0)\
         .repeat(imgs.shape[0], 1, 1)
     tagging_embed, _ = model.tagging_head(

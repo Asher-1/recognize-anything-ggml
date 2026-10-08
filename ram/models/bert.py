@@ -36,14 +36,32 @@ from transformers.modeling_outputs import (
     SequenceClassifierOutput,
     TokenClassifierOutput,
 )
-from transformers.modeling_utils import (
-    PreTrainedModel,
-    apply_chunking_to_forward,
-    find_pruneable_heads_and_indices,
-    prune_linear_layer,
-)
+from transformers.modeling_utils import PreTrainedModel
+try:
+    from transformers.modeling_utils import find_pruneable_heads_and_indices, prune_linear_layer
+except ImportError:
+    from transformers.pytorch_utils import prune_linear_layer
+
+    def find_pruneable_heads_and_indices(heads, n_heads, head_size, already_pruned_heads):
+        heads = set(heads) - already_pruned_heads
+        mask = torch.ones(n_heads, head_size)
+        for head in heads:
+            head -= sum(1 if prior < head else 0 for prior in already_pruned_heads)
+            mask[head] = 0
+        index = torch.arange(mask.numel())[mask.view(-1).eq(1)]
+        return heads, index
+try:
+    # Transformers <= 4.40 re-exported this helper from modeling_utils;
+    # newer releases keep it in pytorch_utils.
+    from transformers.modeling_utils import apply_chunking_to_forward
+except ImportError:
+    from transformers.pytorch_utils import apply_chunking_to_forward
 from transformers.utils import logging
 from transformers.models.bert.configuration_bert import BertConfig
+try:
+    from transformers.generation import GenerationMixin
+except ImportError:
+    from transformers.generation_utils import GenerationMixin
 
 
 logger = logging.get_logger(__name__)
@@ -630,6 +648,25 @@ class BertPreTrainedModel(PreTrainedModel):
     base_model_prefix = "bert"
     _keys_to_ignore_on_load_missing = [r"position_ids"]
 
+    def tie_weights(self, *args, **kwargs):
+        # This repository ships the complete encoder/decoder tensors in its
+        # checkpoints.  Transformers 5.x calls a new tie-weights protocol
+        # during ``init_weights`` which expects ``all_tied_weights_keys``;
+        # the legacy RAM modules do not use that protocol.
+        return None
+
+    def get_head_mask(self, head_mask, num_hidden_layers, is_attention_chunked=False):
+        # Compatibility implementation removed from recent Transformers.
+        if head_mask is None:
+            return [None] * num_hidden_layers
+        if head_mask.dim() == 1:
+            head_mask = head_mask[None, :, None, None, None]
+        elif head_mask.dim() == 2:
+            head_mask = head_mask[:, :, None, None, None]
+        if is_attention_chunked:
+            head_mask = head_mask.unsqueeze(-1)
+        return head_mask.to(dtype=self.dtype)
+
     def _init_weights(self, module):
         """ Initialize the weights """
         if isinstance(module, (nn.Linear, nn.Embedding)):
@@ -882,7 +919,7 @@ class BertModel(BertPreTrainedModel):
         )
 
 
-class BertLMHeadModel(BertPreTrainedModel):
+class BertLMHeadModel(BertPreTrainedModel, GenerationMixin):
 
     _keys_to_ignore_on_load_unexpected = [r"pooler"]
     _keys_to_ignore_on_load_missing = [r"position_ids", r"predictions.decoder.bias"]
@@ -1031,5 +1068,3 @@ class BertLMHeadModel(BertPreTrainedModel):
         for layer_past in past:
             reordered_past += (tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),)
         return reordered_past
-
-

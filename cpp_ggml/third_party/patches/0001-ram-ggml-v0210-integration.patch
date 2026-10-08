@@ -1,0 +1,58 @@
+diff --git a/include/ggml.h b/include/ggml.h
+index 32462d79..ff4054ae 100644
+--- a/include/ggml.h
++++ b/include/ggml.h
+@@ -226,7 +226,7 @@
+ #define GGML_MAX_OP_PARAMS      64
+ 
+ #ifndef GGML_MAX_NAME
+-#   define GGML_MAX_NAME        64
++#   define GGML_MAX_NAME       128
+ #endif
+ 
+ #define GGML_DEFAULT_N_THREADS  4
+diff --git a/src/ggml-backend.cpp b/src/ggml-backend.cpp
+index 3d6310f3..a943318a 100644
+--- a/src/ggml-backend.cpp
++++ b/src/ggml-backend.cpp
+@@ -1280,6 +1280,12 @@ void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgra
+         for (int b = 0; b < sched->n_backends && *cur_backend_id == -1; b++) {
+             ggml_backend_sched_set_if_supported(sched, node, b, cur_backend_id);
+         }
++        if (*cur_backend_id == -1) {
++            GGML_LOG_ERROR("unsupported scheduler node: %s (%s), src0=%s/%s, src1=%s/%s\n",
++                           node->name, ggml_op_name(node->op), node->src[0]->name,
++                           ggml_type_name(node->src[0]->type), node->src[1]->name,
++                           ggml_type_name(node->src[1]->type));
++        }
+         GGML_ASSERT(*cur_backend_id != -1);
+     }
+ 
+diff --git a/src/ggml-cuda/ggml-cuda.cu b/src/ggml-cuda/ggml-cuda.cu
+--- a/src/ggml-cuda/ggml-cuda.cu
++++ b/src/ggml-cuda/ggml-cuda.cu
+@@ -1509,7 +1509,8 @@
+     const int cc = ggml_cuda_info().devices[ctx.device].cc;
+     bool prefer_f32_output = false;
+     if (compute_type == GGML_TYPE_F16) {
+-        prefer_f32_output = cc == GGML_CUDA_CC_VOLTA || GGML_CUDA_CC_IS_RDNA4(cc) || GGML_CUDA_CC_IS_CDNA(cc);
++        prefer_f32_output = dst->op_params[0] == GGML_PREC_F32 ||
++            cc == GGML_CUDA_CC_VOLTA || GGML_CUDA_CC_IS_RDNA4(cc) || GGML_CUDA_CC_IS_CDNA(cc);
+     } else if (compute_type == GGML_TYPE_BF16) {
+         prefer_f32_output = !GGML_CUDA_CC_IS_RDNA3(cc) && !GGML_CUDA_CC_IS_CDNA(cc);
+     }
+@@ -4926,8 +4926,13 @@
+                 if (a->nb[0] != ggml_element_size(a) || b->nb[0] != ggml_element_size(b)) {
+                     return false; // TODO this could in principle be implemented though currently there is no use case.
+                 }
+                 if (b->type == GGML_TYPE_F16 && a->type != GGML_TYPE_F16) {
+-                    return false;
++                    // The ordinary cuBLAS path dequantizes contiguous Q8_0
++                    // weights while keeping the floating activation intact.
++                    if (op->op != GGML_OP_MUL_MAT || a->type != GGML_TYPE_Q8_0 ||
++                            !ggml_is_contiguous(a)) {
++                        return false;
++                    }
+                 }
+ #ifdef GGML_USE_MUSA
+                 const int cc = ggml_cuda_info().devices[dev_ctx->device].cc;

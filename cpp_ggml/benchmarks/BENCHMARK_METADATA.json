@@ -1,0 +1,78 @@
+{
+  "tag_run": "run-20261008-125945",
+  "caption_run": "caption-20261008-133340",
+  "gpu": "NVIDIA GeForce RTX 3060, 550.144.03, 12288 MiB",
+  "platform": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+  "pytorch_version": "2.6.0+cu118",
+  "pytorch_cuda_version": "11.8",
+  "ggml_revision": "8599e0ea3756c4bac4ef813af2241cb1a8bbfb0b",
+  "pipeline": {
+    "python_batch_size": 1,
+    "cpp_threads": 8,
+    "warmup": 1,
+    "repeat": 3,
+    "model_loading_timed": false,
+    "json_serialization_timed": false,
+    "cuda_tagging_compute": "FP16 inputs, FP32 accumulation/output",
+    "cuda_caption_compute": "FP32",
+    "gpu_coordination": "idle parent CUDA context during audited continuation; no compute",
+    "allowed_services": "prophet and AVM; desktop graphics may remain active"
+  },
+  "tag_audit": {
+    "acceptance": {
+      "passed": true,
+      "expected_rows": 72,
+      "measured_rows": 72,
+      "min_cross_f1": 0.99,
+      "max_latency_ratio": 1.0,
+      "failures": []
+    },
+    "audited_commands": 84,
+    "process_samples": 937,
+    "allowed_gpu_pids": [
+      2761602,
+      2808612,
+      3213396
+    ],
+    "transient_gpu_overlap": false
+  },
+  "caption_audit": {
+    "acceptance": {
+      "passed": true,
+      "min_agreement": 0.99,
+      "pytorch_cuda_ms": 247.8229812687884,
+      "failures": []
+    },
+    "audited_commands": 7,
+    "process_samples": 345,
+    "allowed_gpu_pids": [
+      2761602,
+      2808612,
+      3280186
+    ],
+    "transient_gpu_overlap": false
+  },
+  "source_sha256": {
+    "cpp_ggml/src/main.cpp": "34d54e63c6f78eb4dc8d7a0577f51e0f2144ecd69897598a1f59505f0c83f89d",
+    "cpp_ggml/include/ram_ggml/inference.hpp": "a45c46eadfafa9d0fc3987044b7ca9afc26fa056a040c0383ce8267f8a44f3e8",
+    "cpp_ggml/scripts/export_gguf.py": "72f8896434101e2e896b79197679593cee83c02b06a5c06173b84904675beaeb",
+    "cpp_ggml/benchmarks/full_eval.py": "9701215cef3eba69807a3ddbf689ecdfde6bdf7b09255b9e3164e40e314cde14",
+    "cpp_ggml/benchmarks/python_eval.py": "d770e8afcb2a845f5180c1c269e6f8b995232dd5a63f9dab42ba3c8ce8d2de70",
+    "cpp_ggml/benchmarks/caption_all.py": "b6aa24e09ef43089444dc6513f9c3c6202fca5c59431ff2ecefcbc6f97797f4a",
+    "cpp_ggml/build-cuda/ram-ggml": "773a4e32b34cd9c52e915d745f9d51d27a92c7c55d78d4ddea8d4661924a9cf4",
+    "cpp_ggml/build-vulkan/ram-ggml": "1683fbe12be93c81d0ce66c4406181677c61a04a3286f2f5db5e38a98d2a9391",
+    "cpp_ggml/third_party/patches/0001-ram-ggml-v0210-integration.patch": "bf9232c1c4f4108dfe4306dcb49f5a2badbb5137970ae147cef44256f66fd8bd",
+    "cpp_ggml/models/SHA256SUMS": "4fd5baaa2be152d4ac59d2255b2aca6ef2538745297e5ff23a4977a1b577b9bd"
+  },
+  "gguf_sha256": {
+    "ram_plus_swin_large_14m-f16.gguf": "7c683b1a0306b7b016ba56db3c9f6bcc1ba0935ae177cad5048780a658f37064",
+    "ram_plus_swin_large_14m-f32.gguf": "3c540973ad51803c2cf8cb0f383710aa8c8e62c226c9c939f21a19731fc7cd4a",
+    "ram_plus_swin_large_14m-q8_0.gguf": "08635cacabbc054d118df0cf932929332aaaaf9901665730f11e5524ce053d9d",
+    "ram_swin_large_14m-f16.gguf": "cdc38f3924b39605970d785bfa4c54ee6e41d4551c49bf5436a44e34331137b7",
+    "ram_swin_large_14m-f32.gguf": "95f9602087999a4d6ccbbeed8c2cfbc883425759d2b3f29b6cd3fea4a155c837",
+    "ram_swin_large_14m-q8_0.gguf": "0425a0d363958eaa4fb670644a27142e9cba3769c9147d68c37fa2f10231260d",
+    "tag2text_swin_14m-f32.gguf": "d242a323cd1463501d5b7e7c582160f6678b89347c3b3f5e4ceac9caca28407b",
+    "tag2text_swin_14m-f16.gguf": "03ce272940f7254374b89ea3a0e5c8c1ce59df15c4e734ad263f42f7f2d54e51",
+    "tag2text_swin_14m-q8_0.gguf": "70227c4bd98dd269077e35dd7035d9ef689a9d2264715f895847e6b336484f76"
+  }
+}

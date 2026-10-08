@@ -8,6 +8,55 @@ This project aims to develop a series of open-source and strong fundamental imag
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mhd-medfa/recognize-anything/blob/main/recognize_anything_demo.ipynb)
 [![Open in Bohrium](https://cdn.dp.tech/bohrium/web/static/images/open-in-bohrium.svg)](https://bohrium.dp.tech/notebooks/63116114759)
 
+The C++ GGML exports are available from the [GitHub RAM release](https://github.com/Asher-1/cloudViewer_downloads/releases/tag/RAM)
+and [Hugging Face `Asher-1/RAM_GGUF`](https://huggingface.co/Asher-1/RAM_GGUF/tree/main).
+See [`cpp_ggml/models/MODEL_CARD.md`](cpp_ggml/models/MODEL_CARD.md) for the
+per-format model table, checksums and measured CUDA/Vulkan tradeoffs.
+
+## C++ GGML runtime
+
+`cpp_ggml` is the deployable C++ path for the RAM, RAM++ and Tag2Text
+checkpoints. It keeps the GGML 0.21.0 dependency as a pinned submodule,
+applies source changes through a single CMake patch, embeds tag lists,
+thresholds and the Tag2Text vocabulary in GGUF, and exposes one
+`InferenceOptions` class for both the CLI and library API. CUDA and Vulkan
+builds do not link cuDNN.
+
+| Capability | Entry point |
+|---|---|
+| Build CUDA | `cmake -S cpp_ggml -B cpp_ggml/build-cuda -DRAM_GGML_CUDA=ON && cmake --build cpp_ggml/build-cuda -j8` |
+| Build Vulkan | `cmake -S cpp_ggml -B cpp_ggml/build-vulkan -DRAM_GGML_VULKAN=ON && cmake --build cpp_ggml/build-vulkan -j8` |
+| One image | `python3 run_inference.py --engine cpp --model ram --backend cuda --dtype f16` |
+| Full benchmark harness | [`cpp_ggml/benchmarks/full_eval.py`](cpp_ggml/benchmarks/full_eval.py) |
+| Model downloads | [GitHub release](https://github.com/Asher-1/cloudViewer_downloads/releases/tag/RAM) · [Hugging Face](https://huggingface.co/Asher-1/RAM_GGUF/tree/main) |
+
+The benchmark harness covers the retained 50 GT frames (14 OpenImages common,
+12 rare, 12 ImageNet and 12 HICO) across all models, CUDA/Vulkan and
+F32/F16/Q8_0. The original 138,873-row source audit and deterministic
+selection are recorded in the manifest. It records per-image predictions,
+score matrices, latency, cross-engine MAE/F1 and GT `mAP/CP/CR` under each
+dataset's matching label space. The measured [latency and parity matrix](cpp_ggml/benchmarks/LATENCY_MATRIX.md)
+passes the tag aggregate speed gate for 18/18 combinations and the strict
+per-dataset gate for 72/72 rows; the minimum cross-engine F1 is 0.991781. The
+caption speed gate passes for 6/6. After the GGUF boundary-threshold calibration described in
+the model card, all six caption combinations are 1.000 exact and 1.000 word F1
+on the retained 50-frame run. Every published CUDA/Vulkan model and format is
+faster than the PyTorch CUDA baseline in this measured matrix.
+See [`cpp_ggml/README.md`](cpp_ggml/README.md),
+the [`cpp_ggml/models/MODEL_CARD.md`](cpp_ggml/models/MODEL_CARD.md), and the
+[`benchmark method`](cpp_ggml/benchmarks/full_eval/README.md) for model
+selection, Q8 caption limits, data locations, and reproducible commands.
+The retained evaluation images are under `datasets/openimages_common_214/imgs/test`
+(14), `datasets/openimages_rare_200/imgs/test` (12),
+`datasets/imagenet_multi/imgs` (12), and `datasets/hico/imgs` (12). The source
+counts and exact inventory are in [`cpp_ggml/benchmarks/dataset_inventory.json`](cpp_ggml/benchmarks/dataset_inventory.json)
+and [`datasets/SELECTION_REPORT.md`](datasets/SELECTION_REPORT.md).
+Each set has a corresponding GT annotation file. Label names are not all in the
+closed 4,585-class GGUF space; use the sidecar generator and the full-eval
+`--label-space-dir` option for exact open-set scoring. Caption comparisons now
+also produce per-image source/output panels and a word-level contact sheet via
+[`visualize_outputs.py`](cpp_ggml/benchmarks/visualize_outputs.py).
+
 
 - **Recognize Anything Plus Model (RAM++)** [[Paper](https://arxiv.org/abs/2310.15200)] <br>
 

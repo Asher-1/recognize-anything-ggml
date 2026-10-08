@@ -1,0 +1,9 @@
+run-*/
+caption-*/
+*.jsonl
+*.f32
+*.csv
+*.png
+*.jpg
+*.md
+!README.md

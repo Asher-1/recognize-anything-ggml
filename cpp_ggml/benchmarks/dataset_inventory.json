@@ -1,0 +1,51 @@
+{
+  "generated": "2026-09-30",
+  "selection_manifest": "datasets/selection_manifest.json",
+  "source_total_annotation_rows": 138873,
+  "total_images": 50,
+  "datasets": [
+    {
+      "name": "openimages_common_214",
+      "source_annotation_rows": 57224,
+      "annotation_rows": 14,
+      "quota": 14,
+      "image_directory": "datasets/openimages_common_214/imgs/test",
+      "annotations": [
+        "datasets/openimages_common_214/openimages_common_214_ram_annots.txt",
+        "datasets/openimages_common_214/openimages_common_214_tag2text_idannots.txt"
+      ],
+      "images_present_at_audit": 14,
+      "label_protocol": "closed-set RAM and Tag2Text"
+    },
+    {
+      "name": "openimages_rare_200",
+      "source_annotation_rows": 21991,
+      "annotation_rows": 12,
+      "quota": 12,
+      "image_directory": "datasets/openimages_rare_200/imgs/test",
+      "annotations": ["datasets/openimages_rare_200/openimages_rare_200_ram_annots.txt"],
+      "images_present_at_audit": 12,
+      "label_protocol": "RAM/RAM++ open-set"
+    },
+    {
+      "name": "imagenet_multi",
+      "source_annotation_rows": 50000,
+      "annotation_rows": 12,
+      "quota": 12,
+      "image_directory": "datasets/imagenet_multi/imgs",
+      "annotations": ["datasets/imagenet_multi/imagenet_multi_1000_annots.txt"],
+      "images_present_at_audit": 12,
+      "label_protocol": "dataset-specific classes"
+    },
+    {
+      "name": "hico",
+      "source_annotation_rows": 9658,
+      "annotation_rows": 12,
+      "quota": 12,
+      "image_directory": "datasets/hico/imgs",
+      "annotations": ["datasets/hico/hico_600_annots.txt"],
+      "images_present_at_audit": 12,
+      "label_protocol": "human-object interaction classes"
+    }
+  ]
+}

@@ -138,3 +138,30 @@ outputs/
 
 # gradio cache
 gradio_cached_examples/
+
+*.gguf
+*.pth
+*.bin
+cpp_ggml/build-*/
+datasets/openimages_common_214/imgs/
+datasets/openimages_rare_200/imgs/
+datasets/imagenet_multi/imgs/
+datasets/hico/imgs/
+datasets/*.tar
+datasets/*.tar.gz
+
+# Generated benchmark runs and visual artifacts. Keep benchmark scripts,
+# dataset_inventory.json, README files, and checked-in summaries trackable.
+cpp_ggml/benchmarks/full_eval/run-*/
+cpp_ggml/benchmarks/full_eval/caption-*/
+cpp_ggml/benchmarks/label_spaces/
+cpp_ggml/benchmarks/visualizations/
+cpp_ggml/benchmarks/__pycache__/
+cpp_ggml/benchmarks/*.png
+cpp_ggml/benchmarks/*.csv
+!cpp_ggml/benchmarks/latency_matrix_72.csv
+!cpp_ggml/benchmarks/caption_matrix_6.csv
+cpp_ggml/benchmarks/results.json
+cpp_ggml/benchmarks/**/caption_results.json
+cpp_ggml/benchmarks/**/caption_comparison.png
+cpp_ggml/benchmarks/**/test_image.png
